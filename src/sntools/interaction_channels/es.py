@@ -12,7 +12,7 @@ from math import pi, sqrt, log
 from scipy import integrate
 
 from sntools.event import Event
-from sntools.interaction_channels import BaseChannel, cherenkov_threshold
+from sntools.interaction_channels import BaseChannel, cherenkov_threshold, emass_threshold
 
 
 # List of neutrino flavors ("e", "eb", "x", "xb") that interact in this channel.
@@ -147,7 +147,7 @@ class Channel(BaseChannel):
         eE = self.get_eE(eNu, cosT)
         return dE_dCosT * self.dSigma_dE(eNu, eE)
 
-    eE_min = cherenkov_threshold
+    eE_min = emass_threshold
 
     def bounds_eE(self, eNu, *args):  # ignore additional arguments handed over by integrate.nquad()
         """Return kinematic bounds for integration over eE.
@@ -166,7 +166,7 @@ class Channel(BaseChannel):
         T = eE - mE
         return T / 2. * (1 + sqrt(1 + 2 * mE / T))  # inversion of eE_max(eNu)
 
-    bounds_eNu = [eNu_min(None, eE_min), 100]
+    bound_eNu_min = eNu_min(None, eE_min)  # Minimum for integration over eNu
 
     def _bounds_eNu(self, eE):
         """Min/max neutrino energy that can produce a given positron energy."""

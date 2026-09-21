@@ -10,7 +10,7 @@ total cross section, we approximate a DiracDelta function with one that is
 """
 
 from sntools.event import Event
-from sntools.interaction_channels import BaseChannel, cherenkov_threshold
+from sntools.interaction_channels import BaseChannel, emass_threshold
 
 e_thr = 17.338  # energy threshold of this reaction (arXiv:nucl-th/0001050, p. 7)
 epsilon = 0.001  # for approximating DiracDelta distribution below
@@ -34,8 +34,7 @@ class Channel(BaseChannel):
         evt.outgoing_particles.append([11, eE, dirx, diry, dirz])  # outgoing electron
         return evt
 
-    # List with minimum & maximum energy of incoming neutrino.
-    bounds_eNu = [e_thr + cherenkov_threshold, 100]
+    bound_eNu_min = e_thr + emass_threshold  # Minimum for integration over eNu
 
     def bounds_eE(self, eNu, *args):
         """Return kinematic bounds for integration over eE.

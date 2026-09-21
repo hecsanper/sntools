@@ -8,6 +8,9 @@ Additionally, sntools can be used as a Python library that implements neutrino c
 
 This README file should give a brief overview over sntools and help you get started. For more information, see the [full documentation for each release on GitHub](https://github.com/SNEWS2/sntools/releases).
 
+## This fork
+This fork incorporates [PR 71](https://github.com/SNEWS2/sntools/pull/71) from the original repo and adds additional changes so that the Cherenkov limit isn't applied outside oxygen channels, since it is incorrect for liquid scintillator detectors and it is unnecessary anyway, since sntools does not incorporate detector thresholds, so they need to be taken into account separately, and doing that removes events below the Cherenkov threshold for relevant detectors anyway. This fork also changes the upper energy limit so that it is centralized in one place rather than hard-coded individually in different modules, and said upper limit is increased from 100 MeV to 125 MeV.
+
 ## Getting Started
 ### Installation Instructions
 First, make sure you have Python 3.9 or higher installed on your computer.

@@ -26,12 +26,6 @@ def gen_evts(_channel, flv, _flux, mode, binsize, detector, seed, verbose):
     random.seed(seed)
     np.random.seed(int(seed))
 
-    if "c12e" in detector.material["channel_weights"]:
-        # Detector contains liquid scintillator, so Cherenkov threshold does not apply.
-        # Set threshold slightly above electron mass to avoid ZeroDivisionError in `es` channel.
-        import sntools.interaction_channels
-        sntools.interaction_channels.cherenkov_threshold = 0.512
-
     global channel, cached_flux, flux
     flux = _flux
     channel = import_module("sntools.interaction_channels." + _channel).Channel(flv)

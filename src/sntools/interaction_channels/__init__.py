@@ -4,6 +4,7 @@ from sntools.event import Event
 
 
 cherenkov_threshold = 0.77  # Cherenkov threshold of electron/positron in water
+emass_threshold = 0.512 #Slightly above electron mass to avoid ZeroDivisionError in `es` channel.
 # If a detector contains liquid scintillator, we modify this threshold in gen_evts() in channel.py
 
 
@@ -81,12 +82,22 @@ class BaseChannel(ABC):
             list with minimum & maximum allowed energy of outgoing (detected) particle
         """
         return (0, eNu)
+    
+    # Centralized upper neutrino energy limit.
+    E_NU_MAX = 125.0 
+    
+    @property
+    def bound_eNu_min(self):
+        raise NotImplementedError(
+            f"Critical error: The channel '{self.__class__.__name__}' has no defined minimum neutrino energy. "
+            "You must define 'eNu_min' explicitly in the channel's file. "
+            "If the channel has no physical threshold (e.g., ES), set 'eNu_min = 0.0'."
+        )    
 
     @property
-    @abstractmethod
     def bounds_eNu(self):
         """Tuple with minimum & maximum energy of incoming neutrino."""
-        return (0, 100)
+        return (self.bound_eNu_min, self.E_NU_MAX)
 
     def _bounds_eNu(self, eE):
         """Min/max neutrino energy that can produce a given positron energy.
