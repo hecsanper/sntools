@@ -9,6 +9,12 @@ water = {
     "channel_weights": {"ibd": 2, "es": 10, "o16e": 1, "o16eb": 1},  # targets per molecule
 }
 
+anti_water_ibd_only = {
+    "molecular_weight": 18.0153,  # g/mol
+    "density": 1.0,  # g/cm^3
+    "channel_weights": {"anti_ibd": 2},  # targets per molecule
+}
+
 # liquid scintillator: approximated here as CH_2
 ls = {
     "molecular_weight": 14.0266,  # g/mol
@@ -51,7 +57,8 @@ def wbls(x):
 # List of supported detector configurations
 supported_detectors = ["HyperK", "HyperKDR", "SuperK",
                        "WATCHMAN", "WATCHMAN-LS", "WATCHMAN-WbLS", "JUNO",
-                       "THEIA25", "THEIA100", "SNOplusAV", "SNOplusEW"]
+                       "THEIA25", "THEIA100", "SNOplusAV", "SNOplusEW",
+                       "AntiSuperK"]
 
 
 class Detector(object):
@@ -74,6 +81,11 @@ class Detector(object):
             self.height = 3620
             self.radius = 3368.15 / 2
             self.material = water
+        elif name == "AntiSuperK":  # inner detector only, but with anti-water
+            self.shape = "cylinder"
+            self.height = 3620
+            self.radius = 3368.15 / 2
+            self.material = anti_water_ibd_only
         elif name == "WATCHMAN":  # arXiv:1502.01132
             self.shape = "cylinder"
             self.height = 1280
