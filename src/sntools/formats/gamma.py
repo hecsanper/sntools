@@ -7,7 +7,9 @@ with one entry per line. We assume that the data follows a gamma distribution
 See the file 'fluxes/sample-gamma.txt' for details.
 """
 
-from math import gamma, exp
+#from math import gamma, exp
+from scipy.special import gamma
+from numpy import exp
 from scipy import interpolate
 from sntools.formats import BaseFlux, get_endtime, get_starttime
 
@@ -40,7 +42,7 @@ class Flux(BaseFlux):
                 continue
             if entry[0] > self.starttime:
                 indata.append(raw_indata[i - 1])
-                if entry[0] > self.endtime:
+                if entry[0] > self.endtime or i == len(raw_indata) - 1:
                     indata.append(entry)
                     break
 
