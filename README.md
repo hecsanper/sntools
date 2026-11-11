@@ -8,8 +8,16 @@ Additionally, sntools can be used as a Python library that implements neutrino c
 
 This README file should give a brief overview over sntools and help you get started. For more information, see the [full documentation for each release on GitHub](https://github.com/SNEWS2/sntools/releases).
 
-## This fork
-This fork incorporates [PR 71](https://github.com/SNEWS2/sntools/pull/71) from the original repo and adds additional changes so that the Cherenkov limit isn't applied outside oxygen channels, since it is incorrect for liquid scintillator detectors and it is unnecessary anyway, since sntools does not incorporate detector thresholds, so they need to be taken into account separately, and doing that removes events below the Cherenkov threshold for relevant detectors anyway. This fork also changes the upper energy limit so that it is centralized in one place rather than hard-coded individually in different modules, and said upper limit is increased from 100 MeV to 125 MeV.
+## Changes in this fork
+
+### Support for more detectors
+This fork adds support for the placeholder detector Anti-Super-Kamiokande, which is like Super-Kamiokande, but made of antimatter. Support for this placeholder detector may be removed in the future. Support for DUNE is planned and will be added in the future.
+
+### Cherenkov threshold
+This fork incorporates [PR 71](https://github.com/SNEWS2/sntools/pull/71) from the original repo so that the Cherenkov limit isn't incorrectly applied for non-Cherenkov detectors. It also makes additional changes so that the limit is not applied when using sntools as a Phython library to calculate the cross sections either. In fact, the limit is entirely removed, except in oxygen channels. The reason is that sntools is not meant to be a full detector simulator, so it applying the Cherenkov threhold does not remove the need to apply cuts on the events due to the detector thresholds later - In that sense, sntools applying the Cherenkov threshold does not make a difference for Cherenkov detectors, and can lead to incorrect results for non-Cherenkov detectors.
+
+### Other changes
+The fork makes some minor bug fixes and improvements in precision. See the commit history for a full changelog.
 
 ## Getting Started
 ### Installation Instructions

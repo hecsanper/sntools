@@ -150,9 +150,9 @@ class Channel(BaseChannel):
         eE_min = eNu - delta_cm - eNu / sqrt(s) * (eE_cm + pE_cm)
         eE_max = eNu - delta_cm - eNu / sqrt(s) * (eE_cm - pE_cm)
         return [eE_min, eE_max]
-
-    # Minimum for integration over eNu
-    bound_eNu_min = eThr
+    
+    # Bounds for integration over eNu
+    bounds_eNu = [eThr, BaseChannel.E_NU_MAX]
 
     def _bounds_eNu(self, eE):
         """Min/max neutrino energy that can produce a given positron energy.

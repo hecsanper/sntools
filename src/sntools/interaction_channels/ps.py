@@ -116,7 +116,7 @@ class Channel(BaseChannel):
         T = eE - mP  
         return ((T + (sqrt(T * (T + (2 * mP))))) / 2) # see 10.1103/PhysRevD.66.033001
 
-    bound_eNu_min = eNu_min(None, eE_min)  # Minimum for integration over eNu
+    bounds_eNu = [eNu_min(None, eE_min), BaseChannel.E_NU_MAX]
 
     def _bounds_eNu(self, eE):
         """Min/max neutrino energy that can produce a given positron energy."""

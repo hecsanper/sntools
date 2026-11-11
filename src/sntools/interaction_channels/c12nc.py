@@ -38,7 +38,8 @@ class Channel(BaseChannel):
         # evt.outgoing_particles.append([nu_flv, eNu-e_thr, 0, 0, 1])  # outgoing nu
         return evt
 
-    bound_eNu_min = e_thr  # Minimum for integration over eNu
+    # List with minimum & maximum energy of incoming neutrino.
+    bounds_eNu = (e_thr, BaseChannel.E_NU_MAX)
 
     def bounds_eE(self, eNu, *args):
         """Return kinematic bounds for integration over eE.

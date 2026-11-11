@@ -84,20 +84,13 @@ class BaseChannel(ABC):
         return (0, eNu)
     
     # Centralized upper neutrino energy limit.
-    E_NU_MAX = 125.0 
+    E_NU_MAX = 100.0 
     
     @property
-    def bound_eNu_min(self):
-        raise NotImplementedError(
-            f"Critical error: The channel '{self.__class__.__name__}' has no defined minimum neutrino energy. "
-            "You must define 'eNu_min' explicitly in the channel's file. "
-            "If the channel has no physical threshold (e.g., ES), set 'eNu_min = 0.0'."
-        )    
-
-    @property
+    @abstractmethod
     def bounds_eNu(self):
         """Tuple with minimum & maximum energy of incoming neutrino."""
-        return (self.bound_eNu_min, self.E_NU_MAX)
+        return (0, self.E_NU_MAX)
 
     def _bounds_eNu(self, eE):
         """Min/max neutrino energy that can produce a given positron energy.

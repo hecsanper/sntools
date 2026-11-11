@@ -46,7 +46,8 @@ class Channel(BaseChannel):
         evt.outgoing_particles.append((-11, eE, dirx, diry, dirz))  # outgoing positron
         return evt
 
-    bound_eNu_min = fit_parameters[1][0] + cherenkov_threshold  # Minimum for integration over eNu
+    # List with minimum & maximum energy of incoming neutrino.
+    bounds_eNu = [fit_parameters[1][0] + cherenkov_threshold, BaseChannel.E_NU_MAX]
 
     def bounds_eE(self, eNu, *args):
         """Return kinematic bounds for integration over eE.
