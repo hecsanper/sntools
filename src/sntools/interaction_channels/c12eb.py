@@ -51,7 +51,7 @@ class Channel(BaseChannel):
         return evt
 
     # List with minimum & maximum energy of incoming neutrino.
-    bounds_eNu = [e_thr + emass_threshold, BaseChannel.E_NU_MAX]
+    bounds_eNu = [e_thr, BaseChannel.E_NU_MAX]
 
     def bounds_eE(self, eNu, *args):
         """Return kinematic bounds for integration over eE.
@@ -71,7 +71,7 @@ class Channel(BaseChannel):
             eNu:  neutrino energy (in MeV)
             cosT: cosine of the angle between neutrino and outgoing (detected) particle
         """
-        return eNu - e_thr
+        return eNu - e_thr + emass_threshold #E_kin_e + m_e
 
     def dSigma_dE(self, eNu, eE):
         """Return differential cross section in MeV^-2.
@@ -111,4 +111,4 @@ class Channel(BaseChannel):
 
     def _bounds_eNu(self, eE):
         """Min/max neutrino energy that can produce a given positron energy."""
-        return (eE + e_thr - epsilon, eE + e_thr + epsilon)
+        return (eE + e_thr - emass_threshold - epsilon, eE + e_thr - emass_threshold + epsilon)
