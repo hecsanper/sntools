@@ -34,6 +34,13 @@ lab_juno = {
     "channel_weights": {"ibd": 27.3, "es": 127.2, "ps": 27.3, "c12e": 16.65, "c12eb": 16.65, "c12nc": 16.65},
 }
 
+# liquid argon (Ar-40).
+liquid_argon = {
+    "molecular_weight": 39.948,  # g/mol
+    "density": 1.4,  # g/cm^3 (https://arxiv.org/pdf/2002.03010, page 9-619)
+    "channel_weights": {"ar40e": 1, "es": 18},  # targets per molecule
+}
+
 
 
 def wbls(x):
@@ -58,7 +65,7 @@ def wbls(x):
 supported_detectors = ["HyperK", "HyperKDR", "SuperK",
                        "WATCHMAN", "WATCHMAN-LS", "WATCHMAN-WbLS", "JUNO",
                        "THEIA25", "THEIA100", "SNOplusAV", "SNOplusEW",
-                       "AntiSuperK"]
+                       "DUNE", "AntiSuperK"]
 
 
 class Detector(object):
@@ -127,6 +134,18 @@ class Detector(object):
             self.shape = "sphere"
             self.radius = 1770.0
             self.material = lab_juno
+        elif name == "DUNE":  # DUNE far detector
+            self.shape = "box" # https://arxiv.org/pdf/2002.03010, page 1-6, table 1.1
+            #Extra factor 100 (from m to cm) and extra factor 4 (4 modules) assumed stacked in x.
+            self.x = 1200 * 4
+            self.y = 1400
+            #self.z = 5820
+            #This does not match the fiducial mass of 40 kt (which is what matters)...
+            #So, instead of using the true z, rescale it to match the fiducial mass of 40 kt.
+            fiducial_mass = 40e9  # g
+            fiducial_V = fiducial_mass / liquid_argon["density"]  # cm^3
+            self.z = fiducial_V / (self.x * self.y)
+            self.material = liquid_argon
 
             
         else:

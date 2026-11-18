@@ -62,3 +62,8 @@ include = [
     "sntools",
     "sntools.*",
 ]
+
+[tool.setuptools.package-data]
+sntools = [
+    "interaction_channels/data/*",
+]
