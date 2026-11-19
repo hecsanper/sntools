@@ -24,7 +24,9 @@ _CM2_1E42_TO_MEVM2 = 1e-42 * (5.067731e10 ** 2)
 # Minimum physical invisible energy loss (Q-value ~ 1.505 MeV for 40Ar -> 40K g.s. + e-)
 # Used to tighten the upper kinematic bound and guide adaptive quadrature around the peak.
 _EINVIS_MIN_CUT = 1.40  # MeV
-_EINVIS_PEAK_MAX = 2.20  # MeV
+_EINVIS_PEAK_MAX = 1.50  # MeV
+_EINVIS_NEUTRON_THRESHOLD = 9.30 # MeV
+_EINVIS_NEUTRON_PEAK = 15.0 # MeV
 
 class _MarleyEvaluator:
     """
@@ -177,18 +179,9 @@ class _MarleyEvaluator:
         assert c_right > c_left, (
             f"Zero-probability plateau bin selected at j={j} ([{x_left}, {x_right}] MeV) for u={u}."
         )
-
-        # Linear initial guess within the 0.2 MeV bin
-        x0 = x_left + (u - c_left) / (c_right - c_left) * (x_right - x_left)
-
-        # Single analytical Newton-Raphson step to match the PCHIP cubic shape
-        f_val = eval_cdf(x0) - u
-        df_val = float((1.0 - alpha) * self.pdf_splines[idx](x0) + alpha * self.pdf_splines[idx + 1](x0))
-        assert df_val > 0.0, f"Non-positive PDF ({df_val}) inside active bin j={j} at x0={x0} MeV."
-
-        Einvis_sampled = x0 - f_val / df_val
-
-        # Fail-fast if Newton step overshoots the bin or kinematic limits
+        
+        Einvis_sampled = float(brentq(lambda x: eval_cdf(x) - u, x_left, x_right, xtol=1e-3))
+        
         if not (x_left <= Einvis_sampled <= x_right):
             raise RuntimeError(
                 f"Newton step left bin [{x_left}, {x_right}]: got {Einvis_sampled} MeV."
@@ -257,9 +250,10 @@ class Channel(BaseChannel):
         (where E_invis ~ 1.5 MeV) so scipy.integrate.quad resolves it with machine precision.
         """
         eMin, eMax = self.bounds_eE(eNu)
-        p_low = emass_threshold + eNu - _EINVIS_PEAK_MAX
-        p_high = emass_threshold + eNu - _EINVIS_MIN_CUT
-        pts = [p for p in (p_low, p_high) if eMin < p < eMax]
+        p_peak = emass_threshold + eNu - _EINVIS_PEAK_MAX
+        p_neutron_thr = emass_threshold + eNu - _EINVIS_NEUTRON_THRESHOLD
+        p_neutron_peak = emass_threshold + eNu - _EINVIS_NEUTRON_PEAK
+        pts = [p for p in (p_peak, p_neutron_thr, p_neutron_peak) if eMin < p < eMax]
         return {"points": pts}
     
     def dSigma_dCosT(self, eNu, cosT):
@@ -276,6 +270,7 @@ class Channel(BaseChannel):
         return 0.5
         #Should be: return 0.5 * _EVALUATOR.total_sigma(eNu)
         #But it doesn't make an actual difference, so we omit it for efficiency.
+    isotropic = True # The channel is approximated as isotropic.
     
     def _bounds_eNu(self, eE):
         """Min/max neutrino energy that can produce a given positron energy."""

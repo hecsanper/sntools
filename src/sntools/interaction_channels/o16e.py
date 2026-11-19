@@ -92,7 +92,7 @@ class Channel(BaseChannel):
         return eE
 
     def dSigma_dE(self, eNu, eE):
-        """Return differential cross section in MeV^-2.
+        """Return differential cross section in MeV^-3.
 
         Inputs:
             eNu: neutrino energy
@@ -114,6 +114,29 @@ class Channel(BaseChannel):
         d = log10(eNu**0.25 - eG**0.25)
         log_sigma = a + b * d + c * d**2
         return 10**log_sigma
+    
+    def partial_total_sigma(self, eNu, g):  # eq. (4) of arXiv:1809.08398
+        eG, a, b, c = fit_parameters[g]
+
+        if eNu < eG + cherenkov_threshold:
+            return 0
+
+        d = log10(eNu**0.25 - eG**0.25)
+        log_sigma = a + b * d + c * d**2
+        return 10**log_sigma
+    
+    def total_sigma(self, eNu):
+        """Return total cross section in MeV^-2.
+
+        Input:
+            eNu: neutrino energy (in MeV)
+        """
+        sigma = 0
+        for g in range(1, 5):
+            sigma += self.partial_total_sigma(eNu, g)
+
+        sigma *= (5.067731E10)**2  # convert cm^2 to MeV^-2: http://www.wolframalpha.com/input/?i=cm%2F(hbar+*+c)+in+MeV%5E(-1)
+        return sigma
 
     def dSigma_dCosT(self, eNu, cosT):  # eq. (B7) of arXiv:hep-ph/0307050
         """Return differential cross section in MeV^-2 as a function of the emission angle of the outgoing (detected) particle.

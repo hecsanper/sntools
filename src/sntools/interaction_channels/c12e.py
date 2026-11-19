@@ -58,7 +58,7 @@ class Channel(BaseChannel):
         return eNu - e_thr + emass_threshold #E_kin_e + m_e
 
     def dSigma_dE(self, eNu, eE):
-        """Return differential cross section in MeV^-2.
+        """Return differential cross section in MeV^-3.
 
         Inputs:
             eNu: neutrino energy
@@ -73,6 +73,19 @@ class Channel(BaseChannel):
         sigma = 3.439e-44 * (a1 * (eNu - e_thr) + a2 * (eNu - e_thr)**2 + a3 * (eNu - e_thr)**3)
         sigma *= (5.067731E10)**2  # convert cm^2 to MeV^-2: http://www.wolframalpha.com/input/?i=cm%2F(hbar+*+c)+in+MeV%5E(-1)
         return sigma / (2 * epsilon)  # Ensure that integration over eE yields sigma
+    
+    def total_sigma(self, eNu):
+        """Return total cross section in MeV^-2.
+
+        Input:
+            eNu: neutrino energy (in MeV)
+        """
+        if eNu < e_thr:
+            return 0
+        a1, a2, a3 = 10.164, -0.4666, 0.0546
+        sigma = 3.439e-44 * (a1 * (eNu - e_thr) + a2 * (eNu - e_thr)**2 + a3 * (eNu - e_thr)**3)
+        sigma *= (5.067731E10)**2  # convert cm^2 to MeV^-2: http://www.wolframalpha.com/input/?i=cm%2F(hbar+*+c)+in+MeV%5E(-1)
+        return sigma
 
     def dSigma_dCosT(self, eNu, cosT):
         """Return differential cross section in MeV^-2 as a function of the emission angle of the outgoing (detected) particle.
@@ -86,6 +99,7 @@ class Channel(BaseChannel):
         if abs(cosT) > 1:
             return 0
         return 0.5
+    isotropic = True # The channel is approximated as isotropic.
 
     def _bounds_eNu(self, eE):
         """Min/max neutrino energy that can produce a given electron energy."""

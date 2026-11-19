@@ -43,8 +43,7 @@ def gen_evts(_channel, flv, _flux, mode, binsize, detector, seed, verbose):
     if verbose:
         print(f"[{tag}] Calculating event rate for {flux} ...")
     n_targets = detector.n_molecules * detector.material["channel_weights"][_channel]
-    raw_nevts = [n_targets * integrate.nquad(ddEventRate, [channel.bounds_eE, channel.bounds_eNu], args=[t], opts=[channel._opts, {}])[0]
-                 for t in flux.raw_times]
+    raw_nevts = [n_targets * integrate.quad(dEventRate, *channel.bounds_eNu, args=(t,))[0] for t in flux.raw_times]
     event_rate = interpolate.pchip(flux.raw_times, raw_nevts)
 
     # appropriate bin width is different for each mode
@@ -105,6 +104,12 @@ def ddEventRate(eE, eNu, time):
         cached_flux[(eNu, time)] = flux.nu_emission(eNu, time)
     return channel.dSigma_dE(eNu, eE) * cached_flux[(eNu, time)]
 
+def dEventRate(eNu, time):
+    """Single differential event rate dN/(dt dE_nu)."""
+    if (eNu, time) not in cached_flux:
+        cached_flux[(eNu, time)] = flux.nu_emission(eNu, time)
+    return channel.total_sigma(eNu) * cached_flux[(eNu, time)]
+
 
 def rejection_sample(dist, min_val, max_val, n_bins=100):
     """Sample value from an arbitrary distribution."""
@@ -139,7 +144,7 @@ def rejection_sample(dist, min_val, max_val, n_bins=100):
 def get_eNu(time):
     """Get energy of interacting neutrino using rejection sampling."""
     def dist(eNu):
-        return integrate.quad(ddEventRate, *channel.bounds_eE(eNu), args=(eNu, time), points=channel._opts(eNu)["points"])[0]
+        return dEventRate(eNu, time)
     eNu = rejection_sample(dist, *channel.bounds_eNu, n_bins=200)
     return eNu
 
@@ -150,7 +155,11 @@ def get_direction(eNu):
     """
     def dist(cosT):
         return channel.dSigma_dCosT(eNu, cosT)
-    cosT = rejection_sample(dist, -1, 1, 200)
+    
+    if channel.isotropic:
+        cosT = random.uniform(-1.0, 1.0)
+    else:
+        cosT = rejection_sample(dist, -1, 1, 200)
     sinT = sin(acos(cosT))
     phi = 2 * pi * random.random()  # randomly distributed in [0, 2 pi)
     return (sinT * cos(phi), sinT * sin(phi), cosT)

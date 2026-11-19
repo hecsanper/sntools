@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+import numpy as np
+from scipy import integrate, interpolate
 
 from sntools.event import Event
 
@@ -51,8 +53,33 @@ class BaseChannel(ABC):
         # sigma *= (5.067731E10)**2
         return sigma
 
+    def _init_total_sigma_cache(self):
+        e_min, e_max = self.bounds_eNu
+        enu_grid = np.linspace(e_min, e_max, 501)
+        sig_grid = np.zeros_like(enu_grid)
+        for i, eNu in enumerate(enu_grid[1:], start=1):
+            b_min, b_max = self.bounds_eE(eNu)
+            if b_max > b_min:
+                sig_grid[i] = integrate.quad(
+                    lambda eE: self.dSigma_dE(eNu, eE),
+                    b_min, b_max,
+                    points=self._opts(eNu)["points"],
+                    epsabs=0.0, epsrel=1e-3
+                )[0]
+                assert sig_grid[i] >= 0.0, (
+                    f"Integrated sigma is negative for channel {self.__module__}, "
+                    f"flavour {self.flavor}, and E_nu = {eNu}: {sig_grid[i]}")
+        self._sigma_spline = interpolate.PchipInterpolator(enu_grid, sig_grid, extrapolate=False)
+
+    def total_sigma(self, eNu):
+        if not hasattr(self, "_sigma_spline"):
+            self._init_total_sigma_cache()
+        if eNu <= self.bounds_eNu[0] or eNu > self.bounds_eNu[1]:
+            return 0.0
+        return float(self._sigma_spline(eNu))
+
     @abstractmethod
-    def dSigma_dCosT(eNu, cosT):
+    def dSigma_dCosT(self, eNu, cosT):
         """Return differential cross section in MeV^-2 as a function of the emission angle of the outgoing (detected) particle.
 
         Input:
@@ -60,6 +87,8 @@ class BaseChannel(ABC):
             cosT: cosine of the angle between neutrino and outgoing (detected) particle
         """
         return 1.0
+    
+    isotropic = False # Whether the channel is approximated as isotropic.
 
     @abstractmethod
     def get_eE(self, eNu, cosT):
